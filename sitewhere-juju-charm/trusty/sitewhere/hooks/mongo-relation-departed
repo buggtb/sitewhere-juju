@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Get rid of Mongo state file.
+juju-log "Removing MongoDB relation."
+rm -f /opt/sitewhere/mongo.state
+
+# Shut down server.
+$CHARM_DIR/hooks/stop
+

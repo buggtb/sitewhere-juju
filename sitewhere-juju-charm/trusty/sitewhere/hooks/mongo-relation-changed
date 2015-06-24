@@ -1,0 +1,32 @@
+#!/bin/bash
+
+juju-log "MongoDB relation has changed."
+
+mongo_host=`relation-get hostname`
+mongo_port=`relation-get port`
+mongo_private_addr=`relation-get private-address`
+
+# Do not bother with the rest if hostname was not passed.
+[ -z "$mongo_host" ] && echo "Skipping MongoDB state update. Hostname not passed." && exit 0;
+
+# Stop the server if already running.
+$CHARM_DIR/hooks/stop
+
+# Execute Java code to create MongoDB state JSON file.
+/usr/bin/java -jar /opt/sitewhere/juju-tools.jar mongoState $mongo_host $mongo_port > /opt/sitewhere/mongo.state
+if [ $? -ne 0 ]; then
+  juju-log "Error running Java command for extracting MongoDB state to file."
+  exit 1
+fi
+
+# Handle case where there were errors generating MongoDB state.
+mongo_err=$(cat /opt/sitewhere/mongo.state | jq '.error')
+if [ "$mongo_err" != "null" ]; then
+  juju-log "Error marshaling MongoDB configuration file."
+  juju-log $mongo_err
+  exit 1
+fi
+
+# Start the server.
+$CHARM_DIR/hooks/start
+

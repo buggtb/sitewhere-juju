@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# apt-get update
+apt-get install -y unzip wget openjdk-7-jdk jq
+cd /opt
+
+# Download and unpackage SiteWhere
+juju-log "Unpacking SiteWhere distribution."
+cp -f $CHARM_DIR/files/sitewhere-server-1.0.5.tar.gz /opt
+tar xvf sitewhere-server-1.0.5.tar.gz
+ln -s /opt/sitewhere-server-1.0.5 /opt/sitewhere
+
+# Copy helper scripts and base configuration file.
+cp -f $CHARM_DIR/files/*.sh /opt/sitewhere
+cp -f $CHARM_DIR/files/sitewhere-server.xml /opt/sitewhere/conf/sitewhere/sitewhere-server.xml
+
+# Install Java helper JAR
+cp -f $CHARM_DIR/files/sitewhere-juju-tools-1.0.5.jar /opt/sitewhere/juju-tools.jar
+
+# Install startup script
+cp -f $CHARM_DIR/files/sitewhere /etc/init.d/
+chmod +x /etc/init.d/sitewhere
+update-rc.d sitewhere defaults 80 20 > /dev/null
+
+# Set up permissions
+useradd -d /opt/sitewhere sitewhere
+chown -R sitewhere.sitewhere /opt/sitewhere-server-1.0.5
+
+$CHARM_DIR/files/sitewhereState.sh
+

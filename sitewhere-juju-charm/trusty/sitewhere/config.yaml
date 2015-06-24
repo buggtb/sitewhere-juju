@@ -1,0 +1,6 @@
+options:
+  config-url:
+    type: string
+    default: ""
+    description: "URL that contains a SiteWhere configuration to load from."
+

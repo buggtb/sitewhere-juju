@@ -8,6 +8,9 @@
 package com.sitewhere.juju.tools;
 
 import java.io.File;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Properties;
 
 import org.dom4j.Document;
@@ -67,6 +70,10 @@ public class JujuHelper {
 			}
 			case BuildConfigurationProperties: {
 				buildConfigurationProperties(args);
+				break;
+			}
+			case LoadRemoteConfiguration: {
+				loadRemoteConfiguration(args);
 				break;
 			}
 			}
@@ -164,6 +171,32 @@ public class JujuHelper {
 	}
 
 	/**
+	 * Loads a remote file from a URL and writes it to stdout.
+	 * 
+	 * @param args
+	 */
+	protected static void loadRemoteConfiguration(String[] args) {
+		if (args.length < 2) {
+			System.err.println("No URL provided for loading remote configuration.");
+			System.exit(1);
+		}
+		try {
+			URL url = new URL(args[1]);
+			URLConnection connection = url.openConnection();
+			InputStreamReader reader = new InputStreamReader(connection.getInputStream());
+			int data;
+			while ((data = reader.read()) != -1) {
+				System.out.write(data);
+			}
+			reader.close();
+			System.out.flush();
+		} catch (Exception e) {
+			System.err.println("Unable to load remote configuration from: " + args[1] + ". " + e.getMessage());
+			System.exit(1);
+		}
+	}
+
+	/**
 	 * Check whether MongoDB is configured in the sitewhere-server.xml file.
 	 * 
 	 * @param datastores
@@ -242,7 +275,10 @@ public class JujuHelper {
 		MongoState("mongoState"),
 
 		/** Build properties file based on configuration */
-		BuildConfigurationProperties("buildProperties");
+		BuildConfigurationProperties("buildProperties"),
+
+		/** Load a remote configuration file to stdout */
+		LoadRemoteConfiguration("loadRemoteConfig");
 
 		/** Command string */
 		private String command;

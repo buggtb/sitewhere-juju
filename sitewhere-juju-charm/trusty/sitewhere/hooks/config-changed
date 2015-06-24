@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -ux
+
+SW_CONFIG_URL=`config-get config-url`

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+juju-log "Shutting down SiteWhere server."
+service sitewhere stop

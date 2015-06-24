@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Must have stored SiteWhere configuration state to know whether we can start server.
+if [ -f /opt/sitewhere/sitewhere.state ]; then
+
+  juju-log "Found SiteWhere configuration state file."
+
+else 
+
+  juju-log "Can not start. SiteWhere configuration state not found.";
+  exit 0;
+
+fi
+
+# Test for whether a MongoDB configuration can be used.
+juju-log "Testing for whether MongoDB is configured."
+mongo_conf=$(cat /opt/sitewhere/sitewhere.state | jq '.datastoreConfiguration.mongoConfigured')
+if [ "$mongo_conf" == "true" ]; then
+
+  # Verify that a MongoDB relationship exists if SiteWhere is configured to use it.
+  if [ -f /opt/sitewhere/mongo.state ]; then
+
+    juju-log "Would be using a MongoDB configuration!"
+
+  else 
+
+    juju-log "SiteWhere configured for MongoDB, but no relation established."
+    exit 0;
+
+  fi
+
+fi
+
+/usr/bin/java -jar /opt/sitewhere/juju-tools.jar buildProperties > /opt/sitewhere/conf/sitewhere/sitewhere.properties
+if [ $? -ne 0 ]; then
+  juju-log "Error running Java command to generate SiteWhere properties file."
+  exit 1
+fi
+chown sitewhere:sitewhere /opt/sitewhere/conf/sitewhere/sitewhere.properties
+
+juju-log "Starting SiteWhere server."
+service sitewhere start
