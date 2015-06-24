@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="sitewhere-juju-tools/src/main/java/|sitewhere-juju-tools/src/main/java/|sitewhere-juju-tools/src/test/java/|sitewhere-juju-tools/src/test/java/" kind="src" path=""/>
+	<classpathentry kind="src" path="sitewhere-juju-tools/src/main/java"/>
+	<classpathentry kind="src" path="sitewhere-juju-tools/src/test/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-databind/2.1.5/jackson-databind-2.1.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-core/2.1.5/jackson-core-2.1.5.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
