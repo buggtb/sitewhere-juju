@@ -20,6 +20,9 @@ public class SiteWhereConfiguration {
 	/** Datastore configuration state */
 	private DatastoreConfiguration datastoreConfiguration;
 
+	/** Protocol configuration state */
+	private ProtocolsConfiguration protocolsConfiguration;
+
 	public String getError() {
 		return error;
 	}
@@ -34,5 +37,13 @@ public class SiteWhereConfiguration {
 
 	public void setDatastoreConfiguration(DatastoreConfiguration datastoreConfiguration) {
 		this.datastoreConfiguration = datastoreConfiguration;
+	}
+
+	public ProtocolsConfiguration getProtocolsConfiguration() {
+		return protocolsConfiguration;
+	}
+
+	public void setProtocolsConfiguration(ProtocolsConfiguration protocolsConfiguration) {
+		this.protocolsConfiguration = protocolsConfiguration;
 	}
 }

@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 import java.util.Properties;
 
 import org.dom4j.Document;
@@ -24,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sitewhere.juju.tools.configuration.DatastoreConfiguration;
 import com.sitewhere.juju.tools.configuration.MongoConfiguration;
+import com.sitewhere.juju.tools.configuration.MqttConfiguration;
+import com.sitewhere.juju.tools.configuration.ProtocolsConfiguration;
 import com.sitewhere.juju.tools.configuration.SiteWhereConfiguration;
 
 /**
@@ -52,6 +55,9 @@ public class JujuHelper {
 	/** MongoDB state information */
 	public static final String MONGO_STATE = SITEWHERE_BASE + "mongo.state";
 
+	/** MQTT state information */
+	public static final String MQTT_STATE = SITEWHERE_BASE + "mqtt.state";
+
 	public static void main(String[] args) {
 		if (args.length < 1) {
 			System.err.println("No command argument passed.");
@@ -66,6 +72,10 @@ public class JujuHelper {
 			}
 			case MongoState: {
 				echoMongoState(args);
+				break;
+			}
+			case MQTTState: {
+				echoMQTTState(args);
 				break;
 			}
 			case BuildConfigurationProperties: {
@@ -92,11 +102,15 @@ public class JujuHelper {
 		SiteWhereConfiguration state = new SiteWhereConfiguration();
 		try {
 			Document sitewhere = getSiteWhereXmlDOM();
-			Element datastores = getDatastoresElement(sitewhere);
+
 			DatastoreConfiguration dsState = new DatastoreConfiguration();
-			dsState.setMongoConfigured(checkMongo(datastores));
-			dsState.setHbaseConfigured(checkHBase(datastores));
+			dsState.setMongoConfigured(checkMongo(sitewhere));
+			dsState.setHbaseConfigured(checkHBase(sitewhere));
 			state.setDatastoreConfiguration(dsState);
+
+			ProtocolsConfiguration proto = new ProtocolsConfiguration();
+			proto.setUsesMqtt(checkMQTT(sitewhere));
+			state.setProtocolsConfiguration(proto);
 		} catch (Exception e) {
 			state.setError("ERROR: " + e.getMessage());
 		} finally {
@@ -134,6 +148,29 @@ public class JujuHelper {
 	}
 
 	/**
+	 * Echo MQTT configuration state to standard out.
+	 * 
+	 * @param args
+	 */
+	protected static void echoMQTTState(String[] args) {
+		if (args.length < 3) {
+			System.err.println("Not enough arguments passed for MQTT configuration.");
+			System.exit(1);
+		}
+		MqttConfiguration mqtt = new MqttConfiguration();
+		mqtt.setHostname(args[1]);
+		mqtt.setPort(Integer.parseInt(args[2]));
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.enable(SerializationFeature.INDENT_OUTPUT);
+		try {
+			System.out.println(mapper.writeValueAsString(mqtt));
+		} catch (JsonProcessingException e) {
+			System.out.println("{ \"error\": \"Unable to marshal MQTT configuration state.\" }");
+		}
+	}
+
+	/**
 	 * Build the sitewhere.properties file based on current configuration.
 	 * 
 	 * @param args
@@ -160,6 +197,16 @@ public class JujuHelper {
 				MongoConfiguration mongo = mapper.readValue(fMongoState, MongoConfiguration.class);
 				props.put("mongodb.hostname", mongo.getHostname());
 				props.put("mongodb.port", String.valueOf(mongo.getPort()));
+			}
+			if (sitewhere.getProtocolsConfiguration().isUsesMqtt()) {
+				File fMqttState = new File(MQTT_STATE);
+				if (!fMqttState.exists()) {
+					System.err.println("SiteWhere MQTT state file not found.");
+					System.exit(1);
+				}
+				MqttConfiguration mqtt = mapper.readValue(fMqttState, MqttConfiguration.class);
+				props.put("mqtt.hostname", mqtt.getHostname());
+				props.put("mqtt.port", String.valueOf(mqtt.getPort()));
 			}
 
 			props.store(System.out,
@@ -199,12 +246,13 @@ public class JujuHelper {
 	/**
 	 * Check whether MongoDB is configured in the sitewhere-server.xml file.
 	 * 
-	 * @param datastores
+	 * @param sitewhere
 	 * @return
 	 * @throws Exception
 	 */
-	protected static boolean checkMongo(Element datastores) throws Exception {
-		Element mongo = datastores.element(new QName("mongo-datastore", SITEWHERE_NS));
+	protected static boolean checkMongo(Document sitewhere) throws Exception {
+		Element ds = getDatastoresElement(sitewhere);
+		Element mongo = ds.element(new QName("mongo-datastore", SITEWHERE_NS));
 		if (mongo == null) {
 			return false;
 		} else {
@@ -215,17 +263,91 @@ public class JujuHelper {
 	/**
 	 * Check whether HBase is configured in the sitewhere-server.xml file.
 	 * 
-	 * @param datastores
+	 * @param sitewhere
 	 * @return
 	 * @throws Exception
 	 */
-	protected static boolean checkHBase(Element datastores) throws Exception {
-		Element mongo = datastores.element(new QName("hbase-datastore", SITEWHERE_NS));
+	protected static boolean checkHBase(Document sitewhere) throws Exception {
+		Element ds = getDatastoresElement(sitewhere);
+		Element mongo = ds.element(new QName("hbase-datastore", SITEWHERE_NS));
 		if (mongo == null) {
 			return false;
 		} else {
 			return true;
 		}
+	}
+
+	/**
+	 * Check whether elements that use MQTT are found.
+	 * 
+	 * @param sitewhere
+	 * @return
+	 * @throws Exception
+	 */
+	protected static boolean checkMQTT(Document sitewhere) throws Exception {
+		Element sources = getEventSourcesElement(sitewhere);
+		List<?> mqttSources = sources.elements(new QName("mqtt-event-source", SITEWHERE_NS));
+		if (mqttSources.size() > 0) {
+			return true;
+		}
+
+		Element dests = getCommandDestinationsElement(sitewhere);
+		if (dests != null) {
+			List<?> mqttDests = dests.elements(new QName("mqtt-command-destination", SITEWHERE_NS));
+			if (mqttDests.size() > 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get the SiteWhere event sources element from sitewhere-server.xml.
+	 * 
+	 * @param sitewhere
+	 * @return
+	 * @throws Exception
+	 */
+	protected static Element getEventSourcesElement(Document sitewhere) throws Exception {
+		Element devcomm = getDeviceCommunicationElement(sitewhere);
+
+		Element sources = devcomm.element(new QName("event-sources", SITEWHERE_NS));
+		if (sources == null) {
+			throw new Exception("Event sources section not found.");
+		}
+		return sources;
+	}
+
+	/**
+	 * Get the SiteWhere command destinations element from sitewhere-server.xml. Section
+	 * is optiional, so result may be null.
+	 * 
+	 * @param sitewhere
+	 * @return
+	 * @throws Exception
+	 */
+	protected static Element getCommandDestinationsElement(Document sitewhere) throws Exception {
+		Element devcomm = getDeviceCommunicationElement(sitewhere);
+
+		return devcomm.element(new QName("command-destinations", SITEWHERE_NS));
+	}
+
+	/**
+	 * Get the SiteWhere device commuication element from sitewhere-server.xml.
+	 * 
+	 * @param sitewhere
+	 * @return
+	 * @throws Exception
+	 */
+	protected static Element getDeviceCommunicationElement(Document sitewhere) throws Exception {
+		Element configuration = getConfigurationElement(sitewhere);
+
+		Element devcomm = configuration.element(new QName("device-communication", SITEWHERE_NS));
+		if (devcomm == null) {
+			throw new Exception("Device communication section not found.");
+		}
+		return devcomm;
 	}
 
 	/**
@@ -236,17 +358,30 @@ public class JujuHelper {
 	 * @throws Exception
 	 */
 	protected static Element getDatastoresElement(Document sitewhere) throws Exception {
+		Element configuration = getConfigurationElement(sitewhere);
+
+		Element datastores = configuration.element(new QName("datastore", SITEWHERE_NS));
+		if (datastores == null) {
+			throw new Exception("Datastore section not found.");
+		}
+		return datastores;
+	}
+
+	/**
+	 * Get the SiteWhere configuration element from sitewhere-server.xml.
+	 * 
+	 * @param sitewhere
+	 * @return
+	 * @throws Exception
+	 */
+	protected static Element getConfigurationElement(Document sitewhere) throws Exception {
 		Element beans = sitewhere.getRootElement();
 
 		Element configuration = beans.element(new QName("configuration", SITEWHERE_NS));
 		if (configuration == null) {
 			throw new Exception("Configuration element not found.");
 		}
-		Element datastores = configuration.element(new QName("datastore", SITEWHERE_NS));
-		if (datastores == null) {
-			throw new Exception("Datastore section not found.");
-		}
-		return datastores;
+		return configuration;
 	}
 
 	/**
@@ -273,6 +408,9 @@ public class JujuHelper {
 
 		/** Capture MongoDB state and send JSON to system out */
 		MongoState("mongoState"),
+
+		/** Capture MQTT state and send JSON to system out */
+		MQTTState("mqttState"),
 
 		/** Build properties file based on configuration */
 		BuildConfigurationProperties("buildProperties"),

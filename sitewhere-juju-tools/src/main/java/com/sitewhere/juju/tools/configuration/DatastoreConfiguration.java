@@ -7,6 +7,11 @@
  */
 package com.sitewhere.juju.tools.configuration;
 
+/**
+ * Used to indicate which datastore is configured.
+ * 
+ * @author Derek
+ */
 public class DatastoreConfiguration {
 
 	/** Indicates if MongoDB is configured */
