@@ -20,11 +20,30 @@ if [ "$mongo_conf" == "true" ]; then
   # Verify that a MongoDB relationship exists if SiteWhere is configured to use it.
   if [ -f /opt/sitewhere/mongo.state ]; then
 
-    juju-log "Would be using a MongoDB configuration!"
+    juju-log "Using a MongoDB configuration."
 
   else 
 
     juju-log "SiteWhere configured for MongoDB, but no relation established."
+    exit 0;
+
+  fi
+
+fi
+
+# Test for whether a MongoDB configuration can be used.
+juju-log "Testing for whether MQTT is configured."
+mqtt_conf=$(cat /opt/sitewhere/sitewhere.state | jq '.protocolsConfiguration.usesMqtt')
+if [ "$mqtt_conf" == "true" ]; then
+
+  # Verify that a MQTT relationship exists if SiteWhere is configured to use it.
+  if [ -f /opt/sitewhere/mqtt.state ]; then
+
+    juju-log "Using a MQTT configuration."
+
+  else 
+
+    juju-log "SiteWhere configured for MQTT, but no relation established."
     exit 0;
 
   fi

@@ -1,0 +1,32 @@
+#!/bin/bash
+
+juju-log "MQTT relation has changed."
+
+mqtt_host=`relation-get hostname`
+mqtt_port=`relation-get port`
+mqtt_private_addr=`relation-get private-address`
+
+# Do not bother with the rest if hostname was not passed.
+[ -z "$mqtt_host" ] && echo "Skipping MQTT state update. Hostname not passed." && exit 0;
+
+# Stop the server if already running.
+$CHARM_DIR/hooks/stop
+
+# Execute Java code to create MongoDB state JSON file.
+/usr/bin/java -jar /opt/sitewhere/juju-tools.jar mqttState $mqtt_host $mqtt_port > /opt/sitewhere/mqtt.state
+if [ $? -ne 0 ]; then
+  juju-log "Error running Java command for extracting MQTT state to file."
+  exit 1
+fi
+
+# Handle case where there were errors generating MongoDB state.
+mqtt_err=$(cat /opt/sitewhere/mqtt.state | jq '.error')
+if [ "$mqtt_err" != "null" ]; then
+  juju-log "Error marshaling MQTT configuration file."
+  juju-log $mqtt_err
+  exit 1
+fi
+
+# Start the server.
+$CHARM_DIR/hooks/start
+

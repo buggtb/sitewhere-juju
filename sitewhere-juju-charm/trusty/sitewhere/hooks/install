@@ -5,8 +5,9 @@ apt-get install -y unzip wget openjdk-7-jdk jq
 cd /opt
 
 # Download and unpackage SiteWhere
+juju-log "Downloading SiteWhere distribution."
+wget --content-disposition https://s3.amazonaws.com/sitewhere/sitewhere-server-1.0.5.tar.gz
 juju-log "Unpacking SiteWhere distribution."
-cp -f $CHARM_DIR/files/sitewhere-server-1.0.5.tar.gz /opt
 tar xvf sitewhere-server-1.0.5.tar.gz
 ln -s /opt/sitewhere-server-1.0.5 /opt/sitewhere
 
@@ -26,5 +27,5 @@ update-rc.d sitewhere defaults 80 20 > /dev/null
 useradd -d /opt/sitewhere sitewhere
 chown -R sitewhere.sitewhere /opt/sitewhere-server-1.0.5
 
-$CHARM_DIR/files/sitewhereState.sh
-
+# Open port for Administrative Console
+open-port 8080

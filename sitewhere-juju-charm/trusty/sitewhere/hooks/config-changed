@@ -1,5 +1,41 @@
 #!/bin/bash
 
-set -ux
+# Stop the server if already running.
+$CHARM_DIR/hooks/stop
 
-SW_CONFIG_URL=`config-get config-url`
+# Get rid of existing SiteWhere state file.
+rm -f /opt/sitewhere/sitewhere.state
+
+# Process remote configuration file if set.
+sw_config_url=`config-get config-url`
+if [ -n "$sw_config_url" ]; then
+
+  echo "Updating configuration file from $sw_config_url."
+  /usr/bin/java -jar /opt/sitewhere/juju-tools.jar loadRemoteConfig $sw_config_url > /opt/sitewhere/conf/sitewhere/sitewhere-server.xml
+
+  if [ $? -ne 0 ]; then
+
+    juju-log "Error copying configuration file from remote URL."
+    exit 1
+
+  fi
+fi
+
+# Update SiteWhere state file.
+if [ -f /opt/sitewhere/conf/sitewhere/sitewhere-server.xml ]; then
+
+  chown sitewhere:sitewhere /opt/sitewhere/conf/sitewhere/sitewhere-server.xml
+
+  $CHARM_DIR/files/sitewhereState.sh
+  if [ $? -ne 0 ]; then
+
+    rm -f /opt/sitewhere/sitewhere.state
+    exit 1
+   
+  fi
+
+fi
+
+
+# Restart the server.
+$CHARM_DIR/hooks/start

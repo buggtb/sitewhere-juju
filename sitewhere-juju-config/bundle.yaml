@@ -1,0 +1,59 @@
+series: trusty
+services: 
+  sitewhere: 
+    charm: "cs:~sitewhere/trusty/sitewhere-3"
+    num_units: 1
+    expose: true
+    annotations: 
+      "gui-x": "745"
+      "gui-y": "163.70506549809863"
+    to: 
+      - "0"
+  mongodb: 
+    charm: "cs:trusty/mongodb-22"
+    num_units: 1
+    annotations: 
+      "gui-x": "1028"
+      "gui-y": "312.29491924311225"
+    to: 
+      - "1"
+  mosquitto: 
+    charm: "cs:~tasdomas/trusty/mosquitto-0"
+    num_units: 1
+    expose: true
+    annotations: 
+      "gui-x": "456"
+      "gui-y": "308.29491924311225"
+    to: 
+      - "2"
+  "sw-processors": 
+    charm: "cs:~sitewhere/trusty/sitewhere-3"
+    num_units: 1
+    expose: true
+    annotations: 
+      "gui-x": "742"
+      "gui-y": "496.7050807568877"
+    to: 
+      - "3"
+relations: 
+  - - "sitewhere:broker"
+    - "mosquitto:server"
+  - - "sitewhere:mongo"
+    - "mongodb:database"
+  - - "sw-processors:broker"
+    - "mosquitto:server"
+  - - "sw-processors:mongo"
+    - "mongodb:database"
+machines: 
+  "0": 
+    series: trusty
+    constraints: "arch=amd64 cpu-cores=1 mem=1792 root-disk=130048"
+  "1": 
+    series: trusty
+    constraints: "arch=amd64 cpu-cores=1 mem=1792 root-disk=130048"
+  "2": 
+    series: trusty
+    constraints: "arch=amd64 cpu-cores=1 mem=1792 root-disk=130048"
+  "3": 
+    series: trusty
+    constraints: "arch=amd64 cpu-cores=1 mem=1792 root-disk=130048"

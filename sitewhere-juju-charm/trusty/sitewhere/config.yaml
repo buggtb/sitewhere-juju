@@ -1,6 +1,7 @@
 options:
   config-url:
     type: string
-    default: ""
-    description: "URL that contains a SiteWhere configuration to load from."
+    default: https://goo.gl/wqU7Ep
+    description: |
+      URL that points to an external SiteWhere configuration which will be copied to the node.
 
