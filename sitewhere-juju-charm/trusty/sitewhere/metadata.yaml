@@ -2,13 +2,15 @@ name: sitewhere
 summary: SiteWhere node for scalable IoT processing.
 maintainer: sitewhere <admin@sitewhere.org>
 description: |
-  SiteWhere is the Open Platform for the Internet of Things. It allows you to manage a large 
-  number of devices, communicate with them over many transports and protocols, persist device 
-  data in big data storage, and interact with the data via REST services. SiteWhere also 
-  provides a comprehensive framework for integrating device data with other systems and performing 
-  analytics on the data. The system is designed to scale gracefully to any number of devices and 
-  is easily extended to include new types of devices and methods of communication. 
-tags:
+  SiteWhere is the Open Platform for the Internet of Things. It allows 
+  you to manage a large number of devices, communicate with them over 
+  many transports and protocols, persist device data in big data storage, 
+  and interact with the data via REST services. SiteWhere also provides 
+  a comprehensive framework for integrating device data with other 
+  systems and performing analytics on the data. The system is designed 
+  to scale gracefully to any number of devices and is easily extended 
+  to include new types of devices and methods of communication.  
+tags: 
   - misc
 subordinate: false
 provides:
