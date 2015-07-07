@@ -58,6 +58,13 @@ public class JujuHelper {
 	/** MQTT state information */
 	public static final String MQTT_STATE = SITEWHERE_BASE + "mqtt.state";
 
+	/** SiteWhere Load Test configuration file base path */
+	public static final String SITEWHERE_LOAD_TEST_BASE = SITEWHERE_BASE + "conf/loadtest/";
+
+	/** SiteWhere Load Test configuration file location */
+	public static final String SITEWHERE_LOAD_TEST_CONFIG = SITEWHERE_LOAD_TEST_BASE
+			+ "sitewhere-loadtest.xml";
+
 	public static void main(String[] args) {
 		if (args.length < 1) {
 			System.err.println("No command argument passed.");
@@ -391,6 +398,18 @@ public class JujuHelper {
 	 * @throws Exception
 	 */
 	protected static Document getSiteWhereXmlDOM() throws Exception {
+		SAXReader reader = new SAXReader();
+		File sitewhere = new File(SITEWHERE_CONFIG);
+		return reader.read(sitewhere);
+	}
+
+	/**
+	 * Load sitewhere-server.xml as a DOM document.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	protected static Document getLoadTestXmlDOM() throws Exception {
 		SAXReader reader = new SAXReader();
 		File sitewhere = new File(SITEWHERE_CONFIG);
 		return reader.read(sitewhere);

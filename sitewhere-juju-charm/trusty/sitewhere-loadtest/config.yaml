@@ -1,0 +1,7 @@
+options:
+  config-url:
+    type: string
+    default: https://goo.gl/dc3FAp
+    description: |
+      URL that points to an external SiteWhere Load Test Node configuration which will be copied to the node.
+
