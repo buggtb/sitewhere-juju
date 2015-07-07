@@ -2,11 +2,12 @@ name: sitewhere-loadtest
 summary: SiteWhere Load Test Node
 maintainer: sitewhere <admin@sitewhere.org>
 description: |
-  SiteWhere is the Open Platform for the Internet of Things. This charm adds the ability 
-  to dynamically load test one or more SiteWhere server instances using a highly configurable 
-  load testing framework. SiteWhere load test nodes can be scaled out to push the limits of 
-  server configurations, revealing bottlenecks and providing performance numbers for various 
-  configurations and environments. 
+  SiteWhere is the Open Platform for the Internet of Things. This charm 
+  adds the ability to dynamically load test one or more SiteWhere server 
+  instances using a highly configurable load testing framework. 
+  SiteWhere load test nodes can be scaled out to push the limits 
+  of server configurations, revealing bottlenecks and providing 
+  performance numbers for various configurations and environments.  
 tags:
   - misc
 subordinate: false
