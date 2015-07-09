@@ -16,7 +16,8 @@
 		<!-- SiteWhere connection information -->
 		<lt:connection>
 
-			<lt:sitewhere-server restApiUrl="${sitewhere.api.url}"
+			<lt:sitewhere-server
+				restApiUrl="http://${sitewhere.api.host}:${sitewhere.api.port}/sitewhere/api/"
 				restApiUsername="admin" restApiPassword="password"/>
 
 		</lt:connection>
