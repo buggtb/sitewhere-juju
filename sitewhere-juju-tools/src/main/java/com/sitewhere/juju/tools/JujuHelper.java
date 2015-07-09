@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sitewhere.juju.tools.configuration.DatastoreConfiguration;
+import com.sitewhere.juju.tools.configuration.LoadTestConfiguration;
 import com.sitewhere.juju.tools.configuration.MongoConfiguration;
 import com.sitewhere.juju.tools.configuration.MqttConfiguration;
 import com.sitewhere.juju.tools.configuration.ProtocolsConfiguration;
@@ -39,6 +40,10 @@ public class JujuHelper {
 	/** SiteWhere CE namespace */
 	public static final Namespace SITEWHERE_NS = new Namespace("sw",
 			"http://www.sitewhere.com/schema/sitewhere/ce");
+
+	/** SiteWhere Load Test namespace */
+	public static final Namespace LOADTEST_NS = new Namespace("lt",
+			"http://www.sitewhere.com/schema/sitewhere/loadtest");
 
 	/** SiteWhere base path */
 	public static final String SITEWHERE_BASE = "/opt/sitewhere/";
@@ -91,6 +96,10 @@ public class JujuHelper {
 			}
 			case LoadRemoteConfiguration: {
 				loadRemoteConfiguration(args);
+				break;
+			}
+			case LoadTestState: {
+				echoLoadTestState(args);
 				break;
 			}
 			}
@@ -404,6 +413,93 @@ public class JujuHelper {
 	}
 
 	/**
+	 * Echo SiteWhere confiuration state to standard out.
+	 * 
+	 * @param args
+	 */
+	protected static void echoLoadTestState(String[] args) {
+		LoadTestConfiguration state = new LoadTestConfiguration();
+		try {
+			Document loadtest = getLoadTestXmlDOM();
+
+			ProtocolsConfiguration proto = new ProtocolsConfiguration();
+			proto.setUsesMqtt(checkMQTT(loadtest));
+			state.setProtocolsConfiguration(proto);
+		} catch (Exception e) {
+			state.setError("ERROR: " + e.getMessage());
+		} finally {
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.enable(SerializationFeature.INDENT_OUTPUT);
+			try {
+				System.out.println(mapper.writeValueAsString(state));
+			} catch (JsonProcessingException e) {
+				System.out.println("{ \"error\": \"Unable to marshal server configuration state.\" }");
+			}
+		}
+	}
+
+	/**
+	 * Check whether there are any load test MQTT agents configured.
+	 * 
+	 * @param document
+	 * @return
+	 * @throws Exception
+	 */
+	protected static boolean checkLoadTestMQTT(Document document) throws Exception {
+		List<?> agents = getLoadTestMqttAgentElements(document);
+		if (agents.size() == 0) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Get the load test 'mqtt-agent' elements from sitewhere-loadtest.xml.
+	 * 
+	 * @param document
+	 * @return
+	 * @throws Exception
+	 */
+	protected static List<?> getLoadTestMqttAgentElements(Document document) throws Exception {
+		Element agents = getLoadTestAgentsElement(document);
+		return agents.elements(new QName("mqtt-agent", LOADTEST_NS));
+	}
+
+	/**
+	 * Get the load test 'agents' element from sitewhere-loadtest.xml.
+	 * 
+	 * @param document
+	 * @return
+	 * @throws Exception
+	 */
+	protected static Element getLoadTestAgentsElement(Document document) throws Exception {
+		Element loadtest = getLoadTestElement(document);
+
+		Element datastores = loadtest.element(new QName("agents", LOADTEST_NS));
+		if (datastores == null) {
+			throw new Exception("Load test 'agents' element not found.");
+		}
+		return datastores;
+	}
+
+	/**
+	 * Get the load test configuration element from sitewhere-loadtest.xml.
+	 * 
+	 * @param document
+	 * @return
+	 * @throws Exception
+	 */
+	protected static Element getLoadTestElement(Document document) throws Exception {
+		Element beans = document.getRootElement();
+
+		Element loadtest = beans.element(new QName("load-test", LOADTEST_NS));
+		if (loadtest == null) {
+			throw new Exception("Element 'load-test' not found.");
+		}
+		return loadtest;
+	}
+
+	/**
 	 * Load sitewhere-server.xml as a DOM document.
 	 * 
 	 * @return
@@ -435,7 +531,10 @@ public class JujuHelper {
 		BuildConfigurationProperties("buildProperties"),
 
 		/** Load a remote configuration file to stdout */
-		LoadRemoteConfiguration("loadRemoteConfig");
+		LoadRemoteConfiguration("loadRemoteConfig"),
+
+		/** Capture Load Test node state and send JSON to system out */
+		LoadTestState("loadtestState");
 
 		/** Command string */
 		private String command;

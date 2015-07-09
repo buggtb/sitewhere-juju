@@ -8,17 +8,14 @@
 package com.sitewhere.juju.tools.configuration;
 
 /**
- * Result of introspecting SiteWhere Server configuration file.
+ * Result of introspecting SiteWhere Load Test Node configuration file.
  * 
  * @author Derek
  */
-public class SiteWhereConfiguration {
+public class LoadTestConfiguration {
 
 	/** Set if there was an error */
 	private String error;
-
-	/** Datastore configuration state */
-	private DatastoreConfiguration datastoreConfiguration;
 
 	/** Protocol configuration state */
 	private ProtocolsConfiguration protocolsConfiguration;
@@ -29,14 +26,6 @@ public class SiteWhereConfiguration {
 
 	public void setError(String error) {
 		this.error = error;
-	}
-
-	public DatastoreConfiguration getDatastoreConfiguration() {
-		return datastoreConfiguration;
-	}
-
-	public void setDatastoreConfiguration(DatastoreConfiguration datastoreConfiguration) {
-		this.datastoreConfiguration = datastoreConfiguration;
 	}
 
 	public ProtocolsConfiguration getProtocolsConfiguration() {
