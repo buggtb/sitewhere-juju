@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# apt-get update
+apt-get install -y unzip wget openjdk-7-jdk jq
+cd /opt
+
+# Download and unpackage SiteWhere
+juju-log "Downloading SiteWhere Load Test Node distribution."
+wget --content-disposition https://s3.amazonaws.com/sitewhere/sitewhere-load-test-server-1.0.5.tar.gz
+juju-log "Unpacking SiteWhere Load Test Node distribution."
+tar xvf sitewhere-load-test-server-1.0.5.tar.gz
+ln -s /opt/sitewhere-load-test-server-1.0.5 /opt/loadtest
+
+# Copy helper scripts and base configuration file.
+cp -f $CHARM_DIR/files/*.sh /opt/loadtest
+chmod +x /opt/loadtest/*.sh
+
+# Install Java helper JAR
+cp -f $CHARM_DIR/files/sitewhere-juju-tools-1.0.5.jar /opt/loadtest/juju-tools.jar
+
+# Install startup script
+cp -f $CHARM_DIR/files/loadtest /etc/init.d/
+chmod +x /etc/init.d/loadtest
+update-rc.d loadtest defaults 80 20 > /dev/null
+
+# Set up permissions
+useradd -d /opt/loadtest sitewhere
+chown -R sitewhere.sitewhere /opt/sitewhere-load-test-server-1.0.5
+
+# Open port for Administrative Console
+open-port 8080

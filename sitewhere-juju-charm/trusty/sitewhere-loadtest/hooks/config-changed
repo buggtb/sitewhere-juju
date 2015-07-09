@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Stop the server if already running.
+$CHARM_DIR/hooks/stop
+
+# Get rid of existing state file.
+rm -f /opt/loadtest/loadtest.state
+
+# Process remote configuration file if set.
+lt_config_url=`config-get config-url`
+if [ -n "$lt_config_url" ]; then
+
+  echo "Updating configuration file from $lt_config_url."
+  /usr/bin/java -jar /opt/loadtest/juju-tools.jar loadRemoteConfig $lt_config_url > /opt/loadtest/conf/loadtest/sitewhere-loadtest.xml
+
+  if [ $? -ne 0 ]; then
+
+    juju-log "Error copying configuration file from remote URL."
+    exit 1
+
+  fi
+fi
+
+# Update state file.
+if [ -f /opt/loadtest/conf/loadtest/sitewhere-loadtest.xml ]; then
+
+  chown sitewhere:sitewhere /opt/loadtest/conf/loadtest/sitewhere-loadtest.xml
+
+  /opt/loadtest/loadtestState.sh
+  if [ $? -ne 0 ]; then
+
+    rm -f /opt/loadtest/loadtest.state
+    exit 1
+   
+  fi
+
+fi
+
+
+# Restart the server.
+$CHARM_DIR/hooks/start

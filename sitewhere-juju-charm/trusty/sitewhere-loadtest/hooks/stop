@@ -1,0 +1,4 @@
+#!/bin/bash
+
+juju-log "Shutting down SiteWhere Load Test Node."
+service loadtest stop

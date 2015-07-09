@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Must have stored SiteWhere configuration state to know whether we can start server.
+if [ -f /opt/loadtest/loadtest.state ]; then
+
+  juju-log "Found load test configuration state file."
+
+else 
+
+  juju-log "Can not start. Load test configuration state not found.";
+  exit 0;
+
+fi
+
+juju-log "Testing for whether MQTT is configured."
+mqtt_conf=$(cat /opt/loadtest/loadtest.state | jq '.protocolsConfiguration.usesMqtt')
+if [ "$mqtt_conf" == "true" ]; then
+
+  # Verify that a MQTT relationship exists if SiteWhere is configured to use it.
+  if [ -f /opt/loadtest/mqtt.state ]; then
+
+    juju-log "Using a MQTT configuration."
+
+  else 
+
+    juju-log "Load test configured for MQTT, but no relation established."
+    exit 0;
+
+  fi
+
+fi
+
+/usr/bin/java -jar /opt/loadtest/juju-tools.jar loadTestProperties > /opt/loadtest/conf/loadtest/loadtest.properties
+if [ $? -ne 0 ]; then
+  juju-log "Error running Java command to generate load test properties file."
+  exit 1
+fi
+chown sitewhere:sitewhere /opt/loadtest/conf/loadtest/loadtest.properties
+
+juju-log "Starting SiteWhere Load Test Node."
+service loadtest start
