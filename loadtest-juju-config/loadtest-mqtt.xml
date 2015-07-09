@@ -7,8 +7,8 @@
            http://www.sitewhere.com/schema/sitewhere/loadtest http://www.sitewhere.org/schema/sitewhere/loadtest/1.0.5/sitewhere-loadtest.xsd?a=a3">
            
 	<!-- Load property values for substitution -->
-	<context:property-placeholder location="file:${catalina.home}/conf/loadtest/loadtest.properties"
-		ignore-resource-not-found="true"/>
+	<context:property-placeholder location="file:/opt/loadtest/conf/loadtest/loadtest.properties"
+		ignore-resource-not-found="false"/>
 
 	<!-- Defines load testing configuration -->
 	<lt:load-test>
