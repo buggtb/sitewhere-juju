@@ -61,14 +61,22 @@ public class JujuHelper {
 	public static final String MONGO_STATE = SITEWHERE_BASE + "mongo.state";
 
 	/** MQTT state information */
-	public static final String MQTT_STATE = SITEWHERE_BASE + "mqtt.state";
+	public static final String SITEWHERE_MQTT_STATE = SITEWHERE_BASE + "mqtt.state";
+
+	/** Load test node base path */
+	public static final String LOAD_TEST_BASE = "/opt/loadtest/";
 
 	/** SiteWhere Load Test configuration file base path */
-	public static final String SITEWHERE_LOAD_TEST_BASE = SITEWHERE_BASE + "conf/loadtest/";
+	public static final String LOAD_TEST_CONFIG_BASE = LOAD_TEST_BASE + "conf/loadtest/";
 
 	/** SiteWhere Load Test configuration file location */
-	public static final String SITEWHERE_LOAD_TEST_CONFIG = SITEWHERE_LOAD_TEST_BASE
-			+ "sitewhere-loadtest.xml";
+	public static final String LOAD_TEST_CONFIG = LOAD_TEST_CONFIG_BASE + "sitewhere-loadtest.xml";
+
+	/** SiteWhere state information */
+	public static final String LOAD_TEST_STATE = LOAD_TEST_BASE + "loadtest.state";
+
+	/** MQTT state information */
+	public static final String LOAD_TEST_MQTT_STATE = LOAD_TEST_BASE + "mqtt.state";
 
 	public static void main(String[] args) {
 		if (args.length < 1) {
@@ -100,6 +108,10 @@ public class JujuHelper {
 			}
 			case LoadTestState: {
 				echoLoadTestState(args);
+				break;
+			}
+			case BuildLoadTestProperties: {
+				buildLoadTestProperties(args);
 				break;
 			}
 			}
@@ -215,7 +227,7 @@ public class JujuHelper {
 				props.put("mongodb.port", String.valueOf(mongo.getPort()));
 			}
 			if (sitewhere.getProtocolsConfiguration().isUsesMqtt()) {
-				File fMqttState = new File(MQTT_STATE);
+				File fMqttState = new File(SITEWHERE_MQTT_STATE);
 				if (!fMqttState.exists()) {
 					System.err.println("SiteWhere MQTT state file not found.");
 					System.exit(1);
@@ -423,7 +435,7 @@ public class JujuHelper {
 			Document loadtest = getLoadTestXmlDOM();
 
 			ProtocolsConfiguration proto = new ProtocolsConfiguration();
-			proto.setUsesMqtt(checkMQTT(loadtest));
+			proto.setUsesMqtt(checkLoadTestMQTT(loadtest));
 			state.setProtocolsConfiguration(proto);
 		} catch (Exception e) {
 			state.setError("ERROR: " + e.getMessage());
@@ -435,6 +447,44 @@ public class JujuHelper {
 			} catch (JsonProcessingException e) {
 				System.out.println("{ \"error\": \"Unable to marshal server configuration state.\" }");
 			}
+		}
+	}
+
+	/**
+	 * Build the loadtest.properties file based on current configuration.
+	 * 
+	 * @param args
+	 */
+	protected static void buildLoadTestProperties(String[] args) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+
+			Properties props = new Properties();
+
+			File fLoadTestState = new File(LOAD_TEST_STATE);
+			if (!fLoadTestState.exists()) {
+				System.err.println("SiteWhere load test state file not found.");
+				System.exit(1);
+			}
+			LoadTestConfiguration loadtest = mapper.readValue(fLoadTestState, LoadTestConfiguration.class);
+			if (loadtest.getProtocolsConfiguration().isUsesMqtt()) {
+				File fMqttState = new File(LOAD_TEST_MQTT_STATE);
+				if (!fMqttState.exists()) {
+					System.err.println("Load test MQTT state file not found.");
+					System.exit(1);
+				}
+				MqttConfiguration mqtt = mapper.readValue(fMqttState, MqttConfiguration.class);
+				props.put("mqtt.hostname", mqtt.getHostname());
+				props.put("mqtt.port", String.valueOf(mqtt.getPort()));
+				props.put("sitewhere.api.host", "localhost");
+				props.put("sitewhere.api.port", "8080");
+			}
+
+			props.store(System.out,
+					"Load test properties. Generated automatically based on Juju configuration.");
+		} catch (Exception e) {
+			System.err.println("Unable to generate load test configuration properties. " + e.getMessage());
+			System.exit(1);
 		}
 	}
 
@@ -507,7 +557,7 @@ public class JujuHelper {
 	 */
 	protected static Document getLoadTestXmlDOM() throws Exception {
 		SAXReader reader = new SAXReader();
-		File sitewhere = new File(SITEWHERE_CONFIG);
+		File sitewhere = new File(LOAD_TEST_CONFIG);
 		return reader.read(sitewhere);
 	}
 
@@ -534,7 +584,10 @@ public class JujuHelper {
 		LoadRemoteConfiguration("loadRemoteConfig"),
 
 		/** Capture Load Test node state and send JSON to system out */
-		LoadTestState("loadtestState");
+		LoadTestState("loadtestState"),
+
+		/** Build properties file based on load test configuration */
+		BuildLoadTestProperties("loadTestProperties");
 
 		/** Command string */
 		private String command;
