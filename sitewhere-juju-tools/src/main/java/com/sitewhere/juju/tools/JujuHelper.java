@@ -79,6 +79,9 @@ public class JujuHelper {
 	/** MQTT state information */
 	public static final String LOAD_TEST_MQTT_STATE = LOAD_TEST_BASE + "mqtt.state";
 
+	/** SiteWhere state information */
+	public static final String LOAD_TEST_SITEWHERE_STATE = LOAD_TEST_BASE + "sitewhere.state";
+
 	public static void main(String[] args) {
 		if (args.length < 1) {
 			System.err.println("No command argument passed.");
@@ -470,6 +473,7 @@ public class JujuHelper {
 
 			Properties props = new Properties();
 
+			// Get properties associated with load test configuration.
 			File fLoadTestState = new File(LOAD_TEST_STATE);
 			if (!fLoadTestState.exists()) {
 				System.err.println("SiteWhere load test state file not found.");
@@ -485,9 +489,18 @@ public class JujuHelper {
 				MqttConfiguration mqtt = mapper.readValue(fMqttState, MqttConfiguration.class);
 				props.put("mqtt.hostname", mqtt.getHostname());
 				props.put("mqtt.port", String.valueOf(mqtt.getPort()));
-				props.put("sitewhere.api.host", "localhost");
-				props.put("sitewhere.api.port", "8080");
 			}
+
+			// Get properties associated with SiteWhere API access.
+			File fSiteWhereState = new File(LOAD_TEST_SITEWHERE_STATE);
+			if (!fSiteWhereState.exists()) {
+				System.err.println("SiteWhere state file not found.");
+				System.exit(1);
+			}
+			SiteWhereApiConfiguration api =
+					mapper.readValue(fSiteWhereState, SiteWhereApiConfiguration.class);
+			props.put("sitewhere.api.host", api.getHostname());
+			props.put("sitewhere.api.port", String.valueOf(api.getPort()));
 
 			props.store(System.out,
 					"Load test properties. Generated automatically based on Juju configuration.");
@@ -577,7 +590,7 @@ public class JujuHelper {
 	 */
 	protected static void echoSiteWhereApiState(String[] args) {
 		if (args.length < 3) {
-			System.err.println("Not enough arguments passed for MQTT configuration.");
+			System.err.println("Not enough arguments passed for SiteWhere API configuration.");
 			System.exit(1);
 		}
 		SiteWhereApiConfiguration sitewhere = new SiteWhereApiConfiguration();
