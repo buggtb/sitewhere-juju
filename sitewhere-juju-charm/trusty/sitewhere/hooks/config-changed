@@ -26,7 +26,7 @@ if [ -f /opt/sitewhere/conf/sitewhere/sitewhere-server.xml ]; then
 
   chown sitewhere:sitewhere /opt/sitewhere/conf/sitewhere/sitewhere-server.xml
 
-  $CHARM_DIR/files/sitewhereState.sh
+  /opt/sitewhere/sitewhereState.sh
   if [ $? -ne 0 ]; then
 
     rm -f /opt/sitewhere/sitewhere.state

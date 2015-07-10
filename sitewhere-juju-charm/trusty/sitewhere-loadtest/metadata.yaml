@@ -17,3 +17,5 @@ provides:
 requires:
   broker:
     interface: mqtt
+  sitewhere:
+    interface: sitewhere-api

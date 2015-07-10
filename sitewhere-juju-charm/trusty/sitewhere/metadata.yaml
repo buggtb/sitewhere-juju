@@ -16,6 +16,8 @@ subordinate: false
 provides:
   website:
     interface: http
+  rest-apis:
+    interface: sitewhere-api
 requires:
   mongo:
     interface: mongodb

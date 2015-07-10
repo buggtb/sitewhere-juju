@@ -11,9 +11,9 @@ juju-log "Unpacking SiteWhere distribution."
 tar xvf sitewhere-server-1.0.5.tar.gz
 ln -s /opt/sitewhere-server-1.0.5 /opt/sitewhere
 
-# Copy helper scripts and base configuration file.
+# Copy helper scripts.
 cp -f $CHARM_DIR/files/*.sh /opt/sitewhere
-cp -f $CHARM_DIR/files/sitewhere-server.xml /opt/sitewhere/conf/sitewhere/sitewhere-server.xml
+chmod +x /opt/sitewhere/*.sh
 
 # Install Java helper JAR
 cp -f $CHARM_DIR/files/sitewhere-juju-tools-1.0.5.jar /opt/sitewhere/juju-tools.jar
