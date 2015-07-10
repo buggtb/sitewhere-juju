@@ -28,6 +28,7 @@ import com.sitewhere.juju.tools.configuration.LoadTestConfiguration;
 import com.sitewhere.juju.tools.configuration.MongoConfiguration;
 import com.sitewhere.juju.tools.configuration.MqttConfiguration;
 import com.sitewhere.juju.tools.configuration.ProtocolsConfiguration;
+import com.sitewhere.juju.tools.configuration.SiteWhereApiConfiguration;
 import com.sitewhere.juju.tools.configuration.SiteWhereConfiguration;
 
 /**
@@ -114,9 +115,17 @@ public class JujuHelper {
 				buildLoadTestProperties(args);
 				break;
 			}
+			case SiteWhereApiState: {
+				echoSiteWhereApiState(args);
+				break;
 			}
-		} catch (Exception e) {
+			}
+		} catch (IllegalArgumentException e) {
 			System.err.println("Invalid command argument passed: " + args[0]);
+			System.exit(1);
+		} catch (Throwable e) {
+			System.err.println("Unhandled exception: " + e.getMessage());
+			e.printStackTrace(System.err);
 			System.exit(1);
 		}
 	}
@@ -562,6 +571,29 @@ public class JujuHelper {
 	}
 
 	/**
+	 * Echo SiteWhere API relationship state as JSON to standard out.
+	 * 
+	 * @param args
+	 */
+	protected static void echoSiteWhereApiState(String[] args) {
+		if (args.length < 3) {
+			System.err.println("Not enough arguments passed for MQTT configuration.");
+			System.exit(1);
+		}
+		SiteWhereApiConfiguration sitewhere = new SiteWhereApiConfiguration();
+		sitewhere.setHostname(args[1]);
+		sitewhere.setPort(Integer.parseInt(args[2]));
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.enable(SerializationFeature.INDENT_OUTPUT);
+		try {
+			System.out.println(mapper.writeValueAsString(sitewhere));
+		} catch (JsonProcessingException e) {
+			System.out.println("{ \"error\": \"Unable to marshal SiteWhere API configuration state.\" }");
+		}
+	}
+
+	/**
 	 * Enumerates commands available.
 	 * 
 	 * @author Derek
@@ -587,7 +619,10 @@ public class JujuHelper {
 		LoadTestState("loadtestState"),
 
 		/** Build properties file based on load test configuration */
-		BuildLoadTestProperties("loadTestProperties");
+		BuildLoadTestProperties("loadTestProperties"),
+
+		/** Stores state of SiteWhere API relation */
+		SiteWhereApiState("sitewhereApiState");
 
 		/** Command string */
 		private String command;
@@ -606,7 +641,7 @@ public class JujuHelper {
 					return command;
 				}
 			}
-			throw new Exception("Unknown command: " + value);
+			throw new IllegalArgumentException("Unknown command: " + value);
 		}
 	}
 }
