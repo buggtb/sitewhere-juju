@@ -2,5 +2,5 @@
 
 juju-log "SiteWhere Rest APIs relation is being used."
 
-relation-set hostname='unit-get public-address'
-relation-set port=8080
+relation-set sitewhere_api_host=`unit-get public-address`
+relation-set sitewhere_api_port=8080

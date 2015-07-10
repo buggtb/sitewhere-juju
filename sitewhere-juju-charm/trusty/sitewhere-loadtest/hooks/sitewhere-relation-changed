@@ -2,14 +2,16 @@
 
 juju-log "SiteWhere API relation has changed."
 
-sitewhere_api_host=`relation-get hostname`
-sitewhere_api_port=`relation-get port`
+sitewhere_api_host=`relation-get sitewhere_api_host`
+sitewhere_api_port=`relation-get sitewhere_api_port`
 
 # Do not bother with the rest if hostname was not passed.
 [ -z "$sitewhere_api_host" ] && echo "Skipping SiteWhere API state update. Hostname not passed." && exit 0;
 
 # Stop the server if already running.
 $CHARM_DIR/hooks/stop
+
+echo "About to store SiteWhere API state: $sitewhere_api_host $sitewhere_api_port"
 
 # Execute Java code to create SiteWhere state JSON file.
 /usr/bin/java -jar /opt/loadtest/juju-tools.jar sitewhereApiState $sitewhere_api_host $sitewhere_api_port > /opt/loadtest/sitewhere.state
