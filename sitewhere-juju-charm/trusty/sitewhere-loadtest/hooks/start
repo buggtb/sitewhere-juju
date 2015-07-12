@@ -12,7 +12,20 @@ else
 
 fi
 
-juju-log "Testing for whether MQTT is configured."
+juju-log "Testing whether SiteWhere APIs are configured."
+if [ -f /opt/loadtest/sitewhere.state ]; then
+
+  juju-log "Linked to remote SiteWhere APIs."
+
+else 
+
+  juju-log "Load test requires access to SiteWhere APIs, but no relation established."
+  status-set blocked "Waiting for SiteWhere API relation to be established."
+  exit 0;
+
+fi
+
+juju-log "Testing whether MQTT is configured."
 mqtt_conf=$(cat /opt/loadtest/loadtest.state | jq '.protocolsConfiguration.usesMqtt')
 if [ "$mqtt_conf" == "true" ]; then
 
@@ -24,6 +37,7 @@ if [ "$mqtt_conf" == "true" ]; then
   else 
 
     juju-log "Load test configured for MQTT, but no relation established."
+    status-set blocked "Waiting for MQTT relation to be established."
     exit 0;
 
   fi
@@ -39,3 +53,4 @@ chown sitewhere:sitewhere /opt/loadtest/conf/loadtest/loadtest.properties
 
 juju-log "Starting SiteWhere Load Test Node."
 service loadtest start
+status-set active "SiteWhere load test node started."

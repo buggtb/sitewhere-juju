@@ -38,7 +38,7 @@ The SiteWhere Load Test charm allows for the following options:
     juju add-relation sitewhere sitewhere-loadtest
 
     # Use an externally specified SiteWhere Load Test configuration
-    juju set sitewhere config-url=https://goo.gl/M4rQF3
+    juju set sitewhere-loadtest config-url=https://goo.gl/M4rQF3
 
 # Scaling Out
 

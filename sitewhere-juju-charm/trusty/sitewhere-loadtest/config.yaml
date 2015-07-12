@@ -5,4 +5,24 @@ options:
     description: |
       URL that points to an external SiteWhere Load Test Node configuration 
       which will be copied to the node.
+  java-min-heap-mb:
+    type: int
+    default: 512
+    description: |
+      Minimum Java heap size in megabytes.
+  java-max-heap-mb:
+    type: int
+    default: 1536
+    description: |
+      Maximum Java heap size in megabytes.
+  java-min-permgen-mb:
+    type: int
+    default: 128
+    description: |
+      Mininum Java permanant generation space in megabytes.
+  java-max-permgen-mb:
+    type: int
+    default: 512
+    description: |
+      Maximum Java permanant generation space in megabytes.
 

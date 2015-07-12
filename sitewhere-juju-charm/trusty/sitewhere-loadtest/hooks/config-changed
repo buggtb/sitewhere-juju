@@ -36,6 +36,15 @@ if [ -f /opt/loadtest/conf/loadtest/sitewhere-loadtest.xml ]; then
 
 fi
 
+# Set Java memory options used by Tomcat.
+sw_java_heap_min_mb=`config-get java-min-heap-mb`
+sw_java_heap_max_mb=`config-get java-max-heap-mb`
+sw_java_permgen_min_mb=`config-get java-min-permgen-mb`
+sw_java_permgen_max_mb=`config-get java-max-permgen-mb`
+
+echo "export CATALINA_OPTS=\"-Xms${sw_java_heap_min_mb}M -Xmx${sw_java_heap_max_mb}M -XX:PermSize=${sw_java_permgen_min_mb}m -XX:MaxPermSize=${sw_java_permgen_max_mb}m\"" > /opt/loadtest/bin/setenv.sh
+chown sitewhere:sitewhere /opt/loadtest/bin/setenv.sh
+chmod 755 /opt/loadtest/bin/setenv.sh
 
 # Restart the server.
 $CHARM_DIR/hooks/start
