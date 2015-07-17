@@ -25,6 +25,7 @@ if [ "$mongo_conf" == "true" ]; then
   else 
 
     juju-log "SiteWhere configured for MongoDB, but no relation established."
+    status-set blocked "Waiting for MongoDB relation to be established."
     exit 0;
 
   fi
@@ -44,6 +45,7 @@ if [ "$mqtt_conf" == "true" ]; then
   else 
 
     juju-log "SiteWhere configured for MQTT, but no relation established."
+    status-set blocked "Waiting for MQTT relation to be established."
     exit 0;
 
   fi
@@ -59,3 +61,4 @@ chown sitewhere:sitewhere /opt/sitewhere/conf/sitewhere/sitewhere.properties
 
 juju-log "Starting SiteWhere server."
 service sitewhere start
+status-set active "SiteWhere is running."
