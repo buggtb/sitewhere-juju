@@ -1,0 +1,49 @@
+perf:
+  description: The standard mongoperf benchmark.
+  params:
+    runtime:
+      description: The time, in seconds, to run mongoperf.
+      type: integer
+      default: 180
+    nthreads:
+      description: |
+        Defines the number of threads mongoperf will use in the test. To saturate your system’s storage system you will need multiple threads. Consider setting nThreads to 16.
+      type: integer
+      default: 1
+    fileSizeMB:
+      description: Test file size, in megabytes.
+      type: integer
+      default: 1
+    sleepMicros:
+      description: |
+        mongoperf will pause for the number of specified sleepMicros divided by the nThreads between each operation.
+      type: integer
+      default: 0
+    mmf:
+      description: |
+        Set mmf to true to use memory mapped files for the tests.
+      type: boolean
+      default:  False
+    r:
+      description: |
+        Set r to true to perform reads as part of the tests.
+      type: boolean
+      default: False
+    w:
+      description: |
+        Set w to true to perform writes as part of the tests.
+      type: boolean
+      default: False
+    recSizeKB:
+      description: The size of each write operation, in kilobytes.
+      type: integer
+      default: 4
+    syncDelay:
+      description: |
+        Seconds between disk flushes. mongoperf.syncDelay is similar to --syncdelay for mongod.
+
+        The syncDelay controls how frequently mongoperf performs an asynchronous disk flush of the memory mapped file used for testing. By default, mongod performs this operation every 60 seconds. Use syncDelay to test basic system performance of this type of operation.
+
+        Only use syncDelay in conjunction with mmf set to true.
+      type: integer
+      default: 0

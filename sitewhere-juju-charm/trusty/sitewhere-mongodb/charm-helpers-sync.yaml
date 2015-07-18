@@ -1,0 +1,9 @@
+branch: lp:charm-helpers
+destination: hooks/charmhelpers
+include:
+    - core
+    - fetch
+    - contrib.hahelpers.cluster
+    - contrib.python.packages
+    - payload.execd
+    - contrib.charmsupport

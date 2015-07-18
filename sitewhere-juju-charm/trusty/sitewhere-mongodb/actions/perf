@@ -1,0 +1,127 @@
+#!/usr/bin/env python
+import signal
+import subprocess
+import os
+import json
+import re
+from tempfile import NamedTemporaryFile
+from distutils.spawn import find_executable
+
+try:
+    from charmhelpers.contrib.benchmark import Benchmark
+except ImportError:
+    subprocess.check_call(['apt-get', 'install', '-y', 'python-pip'])
+    subprocess.check_call(['pip', 'install', 'charmhelpers'])
+    from charmhelpers.contrib.benchmark import Benchmark
+
+
+def handler(signum, frame):
+    raise IOError('Timeout')
+
+
+def action_set(key, val):
+    action_cmd = ['action-set']
+    if isinstance(val, dict):
+        for k, v in val.iteritems():
+            action_set('%s.%s' % (key, k), v)
+        return
+
+    action_cmd.append('%s=%s' % (key, val))
+    subprocess.check_call(action_cmd)
+
+
+def action_get(key):
+    if find_executable('action-get'):
+        return subprocess.check_output(['action-get', key]).strip()
+    return None
+
+
+def main():
+
+    Benchmark.start()
+
+    """
+    mongoperf runs until interupted so we have to use a
+    signal handler to stop it and gather the results
+    """
+    signal.signal(signal.SIGALRM, handler)
+    runtime = int(action_get('runtime') or 180)
+    signal.alarm(runtime)
+
+    js = {}
+    js['nThreads'] = int(action_get('nthreads'))
+    js['fileSizeMB'] = int(action_get('fileSizeMB'))
+    js['sleepMicros'] = int(action_get('sleepMicros'))
+    js['mmf'] = action_get('mmf')
+    js['r'] = action_get('r')
+    js['w'] = action_get('w')
+    js['recSizeKB'] = int(action_get('recSizeKB'))
+    js['syncDelay'] = int(action_get('syncDelay'))
+
+    config = NamedTemporaryFile(delete=False)
+    config.write(json.dumps(js))
+    config.close()
+    config = open(config.name, 'r')
+
+    output = NamedTemporaryFile(delete=False)
+
+    p = None
+    try:
+        p = subprocess.Popen(
+            'mongoperf',
+            stdin=config,
+            stdout=output,
+        )
+        os.waitpid(p.pid, 0)
+    except subprocess.CalledProcessError as e:
+        rc = e.returncode
+        print "Exit with error code %d" % rc
+    except IOError as e:
+        signal.alarm(0)
+        os.kill(p.pid, signal.SIGKILL)
+    finally:
+        os.unlink(config.name)
+
+    output.close()
+    output = open(output.name, 'r')
+    scores = []
+    regex = re.compile(r'(\d+)\sops\/sec')
+    for line in output:
+        m = regex.match(line)
+        if m:
+            scores.append(int(m.group(1)))
+
+    action_set(
+        "results.total",
+        {'value': sum(scores), 'units': 'ops'}
+    )
+
+    action_set(
+        "results.iterations",
+        {'value': len(scores), 'units': 'iterations'}
+    )
+
+    action_set(
+        "results.average",
+        {'value': sum(scores) / float(len(scores)), 'units': 'ops/sec'}
+    )
+    action_set(
+        "results.max",
+        {'value': max(scores), 'units': 'ops/sec'}
+    )
+    action_set(
+        "results.min",
+        {'value': min(scores), 'units': 'ops/sec'}
+    )
+
+    Benchmark.set_composite_score(
+        sum(scores) / float(len(scores)),
+        'ops/sec',
+        'desc'
+    )
+
+    Benchmark.finish()
+
+
+if __name__ == "__main__":
+    main()
