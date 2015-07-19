@@ -1,4 +1,4 @@
-name: mongodb
+name: sitewhere-mongodb
 summary: An open-source document database, and the leading NoSQL database
 maintainers:
  - Juan Negron <juan.negron@canonical.com>
@@ -18,7 +18,7 @@ description: |
   - Auto-sharding for cloud-level scalability (Q209)
     High performance, scalability, and reasonable depth of functionality
     are the goals for the project.
-categories:
+tags:
     - databases
 provides:
   nrpe-external-master:

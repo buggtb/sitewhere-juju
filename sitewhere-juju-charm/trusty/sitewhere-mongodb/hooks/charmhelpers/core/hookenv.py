@@ -540,6 +540,8 @@ class Hooks(object):
     def execute(self, args):
         """Execute a registered hook based on args[0]"""
         hook_name = os.path.basename(args[0])
+        if hook_name == "hooks.py":
+            hook_name = args[1]
         if hook_name in self._hooks:
             self._hooks[hook_name]()
             if self._config_save:

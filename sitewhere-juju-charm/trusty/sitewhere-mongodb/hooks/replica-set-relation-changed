@@ -1,1 +1,4 @@
-./hooks.py
+#!/bin/bash
+
+$CHARM_DIR/hooks/hooks.py replica-set-relation-changed
+

@@ -1,1 +1,3 @@
-./hooks.py
+#!/bin/bash
+
+$CHARM_DIR/hooks/hooks.py config-changed

@@ -89,8 +89,8 @@ hooks = Hooks()
 ###############################################################################
 # Global variables
 ###############################################################################
-default_mongodb_config = "/etc/mongodb.conf"
-default_mongodb_init_config = "/etc/init/mongodb.conf"
+default_mongodb_config = "/etc/mongod.conf"
+default_mongodb_init_config = "/etc/init/mongod.conf"
 default_mongos_list = "/etc/mongos.list"
 default_wait_for = 10
 default_max_tries = 5
@@ -833,14 +833,14 @@ def restart_mongod(wait_for=default_wait_for, max_tries=default_max_tries):
     my_port = config('port')
     current_try = 0
 
-    service('stop', 'mongodb')
+    service('stop', 'mongod')
     if os.path.exists('/var/lib/mongodb/mongod.lock'):
         os.remove('/var/lib/mongodb/mongod.lock')
 
-    if not service('start', 'mongodb'):
+    if not service('start', 'mongod'):
         return False
 
-    while (service('status', 'mongodb') and
+    while (service('status', 'mongod') and
            not port_check(my_hostname, my_port) and
            current_try < max_tries):
         juju_log(
@@ -850,7 +850,7 @@ def restart_mongod(wait_for=default_wait_for, max_tries=default_max_tries):
         current_try += 1
 
     return(
-        (service('status', 'mongodb') == port_check(my_hostname,
+        (service('status', 'mongod') == port_check(my_hostname,
                                                     my_port)) is True)
 
 
@@ -1088,7 +1088,7 @@ def start_hook():
 def stop_hook():
     juju_log("stop_hook")
     try:
-        retVal = service('stop', 'mongodb')
+        retVal = service('stop', 'mongod')
         os.remove('/var/lib/mongodb/mongod.lock')
         # FIXME Need to check if this is still needed
     except Exception, e:
@@ -1164,7 +1164,8 @@ def am_i_primary():
                 # replication not
                 return False
             else:
-                raise
+                # raise
+                return False
         finally:
             time.sleep(1.5)
 
