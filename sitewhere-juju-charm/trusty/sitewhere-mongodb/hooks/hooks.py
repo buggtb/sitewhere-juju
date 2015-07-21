@@ -276,6 +276,11 @@ def mongodb_conf(config_data=None):
     config.append("port = %d" % config_data['port'])
     config.append("")
 
+    # storageEngine
+    if config_data['storageEngine']:
+        config.append("storageEngine= %s" % config_data['storageEngine'])
+        config.append("")
+
     # journal
     if config_data['journal']:
         config.append("journal=true")
