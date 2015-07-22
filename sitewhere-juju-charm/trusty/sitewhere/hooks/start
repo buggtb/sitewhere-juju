@@ -59,6 +59,9 @@ if [ $? -ne 0 ]; then
 fi
 chown sitewhere:sitewhere /opt/sitewhere/conf/sitewhere/sitewhere.properties
 
+# Delete exploded war if it already exists.
+rm -rf /opt/sitewhere/webapps/sitewhere-server-1.1.0
+
 juju-log "Starting SiteWhere server."
 service sitewhere start
 status-set active "SiteWhere is running."

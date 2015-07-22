@@ -6,17 +6,17 @@ cd /opt
 
 # Download and unpackage SiteWhere
 juju-log "Downloading SiteWhere distribution."
-wget --content-disposition https://s3.amazonaws.com/sitewhere/sitewhere-server-1.0.5.tar.gz
+wget --content-disposition https://s3.amazonaws.com/sitewhere/sitewhere-server-1.1.0.tar.gz
 juju-log "Unpacking SiteWhere distribution."
-tar xvf sitewhere-server-1.0.5.tar.gz
-ln -s /opt/sitewhere-server-1.0.5 /opt/sitewhere
+tar xvf sitewhere-server-1.1.0.tar.gz
+ln -s /opt/sitewhere-server-1.1.0 /opt/sitewhere
 
 # Copy helper scripts.
 cp -f $CHARM_DIR/files/*.sh /opt/sitewhere
 chmod +x /opt/sitewhere/*.sh
 
 # Install Java helper JAR
-cp -f $CHARM_DIR/files/sitewhere-juju-tools-1.0.5.jar /opt/sitewhere/juju-tools.jar
+cp -f $CHARM_DIR/files/sitewhere-juju-tools-1.1.0.jar /opt/sitewhere/juju-tools.jar
 
 # Install startup script
 cp -f $CHARM_DIR/files/sitewhere /etc/init.d/
@@ -25,7 +25,7 @@ update-rc.d sitewhere defaults 80 20 > /dev/null
 
 # Set up permissions
 useradd -d /opt/sitewhere sitewhere
-chown -R sitewhere.sitewhere /opt/sitewhere-server-1.0.5
+chown -R sitewhere.sitewhere /opt/sitewhere-server-1.1.0
 
 # Open port for Administrative Console
 open-port 8080

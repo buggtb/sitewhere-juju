@@ -51,6 +51,9 @@ if [ $? -ne 0 ]; then
 fi
 chown sitewhere:sitewhere /opt/loadtest/conf/loadtest/loadtest.properties
 
+# Remove existing exploded war if it exists.
+rm -rf /opt/loadtest/webapps/sitewhere-load-test-1.0.5
+
 juju-log "Starting SiteWhere Load Test Node."
 service loadtest start
 status-set active "SiteWhere load test node started."
