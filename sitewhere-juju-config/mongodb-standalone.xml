@@ -30,7 +30,7 @@
 		
 			<!-- Default MongoDB Datastore -->
 			<sw:mongo-datastore hostname="${mongodb.hostname}" port="${mongodb.port}"
-				databaseName="sitewhere" userBulkEventInserts="true" bulkInsertMaxChunkSize="1000"/>
+				databaseName="sitewhere" useBulkEventInserts="true" bulkInsertMaxChunkSize="1000"/>
 			
 			<!-- Improves performance by using Hazelcast for distributed caching -->
 			<sw:hazelcast-cache/>

@@ -1,7 +1,7 @@
 options:
   config-url:
     type: string
-    default: https://goo.gl/wqU7Ep
+    default: https://goo.gl/V6d9t5
     description: |
       URL that points to an external SiteWhere configuration which will be copied to the node.
   java-min-heap-mb:
