@@ -1,12 +1,16 @@
 options:
   dbpath:
-    default: "/var/lib/mongodb"
+    default: "/mnt/data"
     type: string
     description: The path where the data files will be kept.
   logpath:
     default: "/var/log/mongodb/mongodb.log"
     type: string
     description: The path where to send log data.
+  storageEngine:
+    default: "wiredTiger"
+    type: "string"
+    description: Storage engine type  
   logappend:
     default: True
     type: boolean
